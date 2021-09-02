@@ -17,12 +17,12 @@ public class ApplicationServicesTests {
     //RestaurantOrderServicesStub ros;
 
     
-    @Test
-    public void contextLoads() {
+    //@Test
+    //public void contextLoads() {
         
         
         
         
-    }
+    //}
 
 }
