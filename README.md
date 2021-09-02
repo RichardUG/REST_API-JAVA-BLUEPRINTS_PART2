@@ -28,6 +28,362 @@ Del anterior diagrama de componentes (de alto nivel), se desprendió el siguient
 
 1. Integre al proyecto base suministrado los Beans desarrollados en el ejercicio anterior. Sólo copie las clases, NO los archivos de configuración. Rectifique que se tenga correctamente configurado el esquema de inyección de dependencias con las anotaciones @Service y @Autowired.
 
+    Agregamos el paquete ```filters``` y en el la interfaz ```BlueprintsFilter```
+    
+    ```java
+    public interface BlueprintsFilter {
+        public Blueprint filter(Blueprint bp);
+    }
+    ```
+    
+    También agregamos la clase ```RedundancyFilter```  que extiende de la interfaz ```BlueprintsFilter```
+    
+    ```java
+    @Service("RedundancyFilter")
+    public class RedundancyFilter implements BlueprintsFilter {
+        @Override
+        public Blueprint filter(Blueprint bp) {
+            ArrayList<Point> points=new ArrayList<Point>();
+            for (Point i :bp.getPoints()){
+                boolean found=false;
+                for(Point j : points){
+                    if(i.equals(j)){
+                        found=true;
+                        break;
+                    }
+                }
+                if(!found)points.add(i);
+            }
+            return new Blueprint(bp.getAuthor(),bp.getName(),points);
+        }
+
+    }
+    ```
+    
+    Y después la clase ```SubsamplingFilter``` que extiende de la interfaz ```BlueprintsFilter```
+    
+    ```java
+    @Service("SubsamplingFilter")
+    public class SubsamplingFilter implements BlueprintsFilter {
+        @Override
+        public Blueprint filter(Blueprint bp) {
+            List<Point> oldPoints=bp.getPoints();
+            ArrayList<Point> points=new ArrayList<Point>();
+            for(int i=0;i<oldPoints.size();i++){
+                if(i%2==0){
+                    points.add(oldPoints.get(i));
+                }
+            }
+            return new Blueprint(bp.getAuthor(),bp.getName(),points);
+        }
+    }
+    ```
+    
+    Después agregamos el paquete ```filters``` y en el la clase ```Blueprint```
+    
+    ```java
+    public class Blueprint {
+        private String author=null;
+        private List<Point> points=null;
+        private String name=null;
+        public Blueprint(String author,String name,List<Point> pnts){
+            this.author=author;
+            this.name=name;
+            points=pnts;
+        }
+        public Blueprint(String author,String name,Point[] pnts){
+            this.author=author;
+            this.name=name;
+            points=Arrays.asList(pnts);
+        } 
+        public Blueprint(String author, String name){
+            this.name=name;
+            this.author=author;
+            points=new ArrayList<>();
+        }
+        public Blueprint() {}    
+        public String getName() {
+            return name;
+        }
+        public String getAuthor() {
+            return author;
+        }
+        public List<Point> getPoints() {
+            return points;
+        }
+        public void addPoint(Point p){
+            this.points.add(p);
+        }
+        @Override
+        public String toString() {
+            return "Blueprint{" + "author=" + author + ", name=" + name + '}';
+        }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            return hash;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Blueprint other = (Blueprint) obj;
+            if (!Objects.equals(this.author, other.author)) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            if (this.points.size()!=other.points.size()){
+                return false;
+            }
+            for (int i=0;i<this.points.size();i++){
+                if (this.points.get(i)!=other.points.get(i)){
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    ```
+    
+    Y en el mismo paquete ```filters``` agregamos la clase ```Point```
+    
+    ```java
+    public class Point {
+        private int x;
+        private int y;
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+        public Point() {}    
+        public int getX() {
+            return x;
+        }
+        public void setX(int x) {
+            this.x = x;
+        }
+        public int getY() {
+            return y;
+        }
+        public void setY(int y) {
+            this.y = y;
+        }
+        @Override
+        public String toString() {
+            return "Point{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    '}';
+        }
+        @Override
+        public boolean equals(Object obj) {
+            boolean equals;
+            if(!obj.getClass().getSimpleName().equals("Point")){
+                equals = false;
+            }
+            else{
+                Point point = (Point) obj;
+                equals = point.getX()==x && point.getY()==y;
+            }
+            return equals;
+        }
+    }
+    ```
+    
+    Ahora creamos el paquete ```persistence```  y en el la interfaz ```BlueprintsPersistence```
+    
+    ```java
+    public interface BlueprintsPersistence {
+        /**
+         * 
+         * @param bp the new blueprint
+         * @throws BlueprintPersistenceException if a blueprint with the same name already exists,
+         *    or any other low-level persistence error occurs.
+        */
+        public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException;
+    
+        /**
+         * 
+         * @param author blueprint's author
+         * @param bprintname blueprint's author
+         * @return the blueprint of the given name and author
+         * @throws BlueprintNotFoundException if there is no such blueprint
+        */
+        public Blueprint getBlueprint(String author,String bprintname) throws BlueprintNotFoundException;
+        public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException;
+        public Set<Blueprint> getAllBlueprints();
+    }
+    ```
+    
+    En el mismo paquete creamos la clase ```BlueprintPersistenceException``` de tipo ```Exception```
+    
+    ```java
+    public class BlueprintPersistenceException extends Exception{
+        public BlueprintPersistenceException(String message) {
+            super(message);
+        }
+        public BlueprintPersistenceException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    ```
+    
+    Y otra clase ```BlueprintNotFoundException``` también de tipo ```Exception```
+    
+    ```java
+    public class BlueprintNotFoundException extends Exception{
+        public BlueprintNotFoundException(String message) {
+            super(message);
+        }
+        public BlueprintNotFoundException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    ```
+    
+    Después en el mismo paquete ```persistence``` creamos el paquete ```ìml``` y en el la clase ```Tuple```
+    
+    ```java
+    public class Tuple<T1, T2> {
+        T1 o1;
+        T2 o2;
+        public Tuple(T1 o1, T2 o2) {
+            super();
+            this.o1 = o1;
+            this.o2 = o2;
+        }
+        public T1 getElem1() {
+            return o1;
+        }
+        public T2 getElem2() {
+            return o2;
+        }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + Objects.hashCode(this.o1);
+            hash = 17 * hash + Objects.hashCode(this.o2);
+            return hash;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Tuple<?, ?> other = (Tuple<?, ?>) obj;
+            if (!Objects.equals(this.o1, other.o1)) {
+                return false;
+            }
+            if (!Objects.equals(this.o2, other.o2)) {
+                return false;
+            }
+            return true;
+        }        
+    }
+    ```
+    
+    Y en el mismo paquete ```ìml``` creamos la clase ```InMemoryBlueprintPersistence``` que extiende de ```BlueprintsPersistence```
+    
+    ```java
+    @Service("InMemoryBlueprintPersistence")
+    public class InMemoryBlueprintPersistence implements BlueprintsPersistence{
+        private final Map<Tuple<String,String>,Blueprint> blueprints=new HashMap<>();
+        public InMemoryBlueprintPersistence() {
+            Point[] pts1=new Point[]{new Point(140, 140),new Point(115, 115)};
+            Blueprint bp1=new Blueprint("Ana", "bp1",pts1);
+            blueprints.put(new Tuple<>(bp1.getAuthor(),bp1.getName()), bp1);	
+        }    
+        @Override
+        public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException {
+            Blueprint blueprint= blueprints.putIfAbsent(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
+            if (blueprint!=null){
+                throw new BlueprintPersistenceException("The given blueprint already exists: "+bp);
+            }
+        }
+        @Override
+        public Blueprint getBlueprint(String author, String bprintname) throws BlueprintNotFoundException {
+            Blueprint bp=blueprints.get(new Tuple<>(author, bprintname));
+            if(bp==null)throw new BlueprintNotFoundException("El plano con estas caracteristicas no existe");
+            return blueprints.get(new Tuple<>(author, bprintname));
+        }
+        @Override
+        public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException {
+            Set<Blueprint> ans = new HashSet<>();
+            Set<Tuple<String,String>> llaves = blueprints.keySet();
+            for(Tuple<String,String> i : llaves){
+                if(i.getElem1().equalsIgnoreCase(author)){
+                    ans.add(blueprints.get(i));
+                }
+            }
+            if(ans.size()==0) throw new BlueprintNotFoundException("Este usuario no tiene planos");
+            return ans;
+        }
+        @Override
+        public Set<Blueprint> getAllBlueprints() {
+            return new HashSet<Blueprint>(blueprints.values());
+        }
+    }
+    ```
+    
+    Y finalmente creamos el paquete ```services```y en el la clase ```BlueprintsServices```
+    
+    ```java
+    @Service("BlueprintsServices")
+    public class BlueprintsServices {
+        @Autowired
+        @Qualifier("InMemoryBlueprintPersistence")
+        BlueprintsPersistence bpp=null;
+
+        @Autowired
+        @Qualifier("RedundancyFilter")
+        BlueprintsFilter bpf;
+	
+        public void addNewBlueprint(Blueprint bp) throws BlueprintPersistenceException {
+            bpp.saveBlueprint(bp);
+        }   
+        public Set<Blueprint> getAllBlueprints(){
+            return bpp.getAllBlueprints();
+        }    
+        /**
+         * 
+         * @param author blueprint's author
+         * @param name blueprint's name
+         * @return the blueprint of the given name created by the given author
+         * @throws BlueprintNotFoundException if there is no such blueprint
+        */
+        public Blueprint getBlueprint(String author,String name) throws BlueprintNotFoundException{
+            return bpp.getBlueprint(author,name);
+        }
+        /**
+         * 
+         * @param author blueprint's author
+         * @return all the blueprints of the given author
+         * @throws BlueprintNotFoundException if the given author doesn't exist
+        */
+        public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException{
+            return bpp.getBlueprintsByAuthor(author);
+        }
+        public Blueprint filter(Blueprint bp){
+            return bpf.filter(bp);
+        }
+    }
+    ```
+
 2. Modifique el bean de persistecia 'InMemoryBlueprintPersistence' para que por defecto se inicialice con al menos otros tres planos, y con dos asociados a un mismo autor.
 
 3. Configure su aplicación para que ofrezca el recurso "/blueprints", de manera que cuando se le haga una petición GET, retorne -en formato jSON- el conjunto de todos los planos. Para esto:
