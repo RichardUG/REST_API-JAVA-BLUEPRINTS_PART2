@@ -1,4 +1,4 @@
-
+﻿
 ### Escuela Colombiana de Ingeniería
 
 ### Arquitecturas de Software
@@ -641,4 +641,12 @@ Ajuste el código para suprimir las condiciones de carrera. Tengan en cuenta que
 
 Escriba su análisis y la solución aplicada en el archivo ANALISIS_CONCURRENCIA.txt
 
+### Autores
+* [Ana Maria Salazar Bohorquez](https://github.com/anamariasalazar)
+* [Richard Santiago Urrea Garcia](https://github.com/RichardUG)
+
+### Licencia & Derechos de Autor
+**©️** Ana Maria Salazar Bohorquez && Richard Santiago Urrea Garcia, Estudiantes de Ingeniería de Sistemas de la Escuela Colombiana de Ingeniería Julio Garavito
+
+Licencia bajo la [GNU General Public License](/LICENSE.txt)
 
