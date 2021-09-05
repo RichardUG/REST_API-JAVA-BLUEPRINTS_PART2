@@ -559,9 +559,9 @@ Del anterior diagrama de componentes (de alto nivel), se desprendió el siguient
     cual en este caso debe ser un documento jSON equivalente a la clase
     Cliente (donde en lugar de {ObjetoJSON}, se usará un objeto jSON correspondiente a una nueva orden:
     
-        ```	
+        	
         $ curl -i -X POST -HContent-Type:application/json -HAccept:application/json http://URL_del_recurso_ordenes -d '{ObjetoJSON}'
-        ```	
+        	
 
     Con lo anterior, registre un nuevo plano (para 'diseñar' un objeto jSON, puede usar [esta herramienta](http://www.jsoneditoronline.org/)):
     Nota: puede basarse en el formato jSON mostrado en el navegador al consultar una orden con el método GET.
